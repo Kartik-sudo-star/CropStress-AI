@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CropStress AI - Working Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0fdf4;color:#1a2e1a;min-height:100vh}
+header{background:linear-gradient(135deg,#15803d,#16a34a);color:#fff;padding:28px 20px;text-align:center}
+header h1{font-size:28px}header p{opacity:.9;margin-top:6px}
+.badge{display:inline-block;background:#fef08a;color:#713f12;font-size:12px;padding:4px 12px;border-radius:20px;margin-top:10px;font-weight:600}
+main{max-width:900px;margin:0 auto;padding:24px 16px 60px}
+.card{background:#fff;border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.card h2{font-size:18px;margin-bottom:14px;color:#15803d}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.grid{grid-template-columns:1fr}}
+label{font-size:13px;font-weight:600;display:block;margin-bottom:4px}
+input,select{width:100%;padding:10px;border:1.5px solid #bbf7d0;border-radius:8px;font-size:14px}
+input:focus{outline:none;border-color:#16a34a}
+button{background:#16a34a;color:#fff;border:none;padding:13px 28px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;width:100%}
+button:disabled{background:#86efac;cursor:wait}
+#preview{max-width:100%;border-radius:10px;margin-top:10px;display:none}
+.result{border-left:6px solid #16a34a}.result.sev{border-color:#dc2626}.result.mod{border-color:#f59e0b}
+.prob{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}.bar{flex:1;height:10px;background:#e5e7eb;border-radius:6px;overflow:hidden}.fill{height:100%;background:#16a34a;border-radius:6px}
+ul{margin:8px 0 0 18px;font-size:14px}li{margin:4px 0}
+.err{background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;padding:12px;border-radius:8px;margin-top:10px;display:none}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left}
+.spin{display:inline-block;width:16px;height:16px;border:3px solid #fff;border-top-color:transparent;border-radius:50%;animation:s 1s linear infinite}@keyframes s{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+<h1>🌾 CropStress AI - Working Model</h1>
+<p>Leaf image + environmental sensors → stress prediction (3 real trained models)</p>
+<div class="badge">SYNTHETIC-120 DATASET · honest prototype labels · real test metrics</div>
+</header>
+<main>
+<div class="card"><h2>1️⃣ Leaf image + sensors</h2>
+<div class="grid">
+<div><label>Leaf image (JPG/PNG)</label><input type="file" id="img" accept="image/*"><img id="preview"></div>
+<div><label>Crop</label><select id="crop"><option>wheat</option><option>rice</option><option>maize</option><option>tomato</option><option>potato</option><option>soybean</option><option>cotton</option></select></div>
+<div><label>Soil moisture % (0-100)</label><input type="number" id="sm" value="22" min="0" max="100" step="0.1"></div>
+<div><label>Temperature °C (-10-50)</label><input type="number" id="tp" value="36" min="-10" max="50" step="0.1"></div>
+<div><label>Humidity % (0-100)</label><input type="number" id="hu" value="32" min="0" max="100" step="0.1"></div>
+<div><label>Rainfall mm (0-500)</label><input type="number" id="rf" value="0" min="0" max="500" step="0.1"></div>
+<div><label>Light µmol/m²/s (0-2000)</label><input type="number" id="li" value="1750" min="0" max="2000" step="1"></div>
+</div>
+<div style="margin-top:14px"><button id="go" onclick="analyze()">🔍 Analyze Crop Stress</button></div>
+<div class="err" id="err"></div>
+</div>
+<div class="card result" id="res" style="display:none"><h2>2️⃣ Prediction result</h2><div id="resbody"></div></div>
+<div class="card"><h2>3️⃣ Model comparison (REAL test metrics)</h2><div id="cmp">loading…</div></div>
+<div class="card"><h2>4️⃣ Prediction history</h2><div id="hist">loading…</div></div>
+</main>
+<script>
+const API='http://localhost:8000';
+document.getElementById('img').onchange=e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=x=>{const p=document.getElementById('preview');p.src=x.target.result;p.style.display='block'};r.readAsDataURL(f)}};
+async function analyze(){
+ const f=document.getElementById('img').files[0];
+ const err=document.getElementById('err');err.style.display='none';
+ if(!f){err.textContent='Please select a leaf image';err.style.display='block';return}
+ const b=document.getElementById('go');b.disabled=true;b.innerHTML='<span class="spin"></span> Analyzing…';
+ const fd=new FormData();fd.append('image',f);fd.append('crop',document.getElementById('crop').value);
+ fd.append('soil_moisture',document.getElementById('sm').value);fd.append('temperature',document.getElementById('tp').value);
+ fd.append('humidity',document.getElementById('hu').value);fd.append('rainfall',document.getElementById('rf').value);
+ fd.append('light_intensity',document.getElementById('li').value);
+ try{const r=await fetch(API+'/api/predict',{method:'POST',body:fd});const d=await r.json();
+  if(!r.ok)throw new Error(d.detail||'failed');
+  const box=document.getElementById('res');box.style.display='block';
+  box.className='card result '+(d.prediction.includes('Severe')?'sev':d.prediction.includes('Moderate')?'mod':'');
+  document.getElementById('resbody').innerHTML=
+   `<h3 style="font-size:24px">${d.prediction} (${(d.confidence*100).toFixed(1)}%) · ${d.risk_level} risk</h3>
+    <p style="font-size:12px;color:#666">ID ${d.prediction_id} · ${d.processing_time_ms}ms · ${d.model_version}</p>`+
+   Object.entries(d.probabilities).map(([k,v])=>`<div class="prob"><span style="width:130px">${k}</span><div class="bar"><div class="fill" style="width:${(v*100).toFixed(1)}%"></div></div><span>${(v*100).toFixed(1)}%</span></div>`).join('')+
+   `<h4 style="margin-top:10px">Contributing factors</h4><ul>`+d.contributing_factors.map(x=>`<li>${x.description} (${(x.impact*100).toFixed(0)}%)</li>`).join('')+`</ul>`+
+   `<h4 style="margin-top:10px">Recommendations</h4><ul>`+d.recommendations.map(x=>`<li>${x}</li>`).join('')+`</ul>`;
+  loadHist();
+ }catch(e){err.textContent='Error: '+e.message;err.style.display='block'}
+ b.disabled=false;b.textContent='🔍 Analyze Crop Stress';
+}
+async function loadCmp(){try{const d=await (await fetch(API+'/api/models/comparison')).json();
+ let h='<table><tr><th>Model</th><th>Acc</th><th>F1-macro</th><th>Prec</th><th>Rec</th></tr>';
+ for(const k of ['image_only','sensor_only','multimodal'])if(d[k])h+=`<tr><td><b>${k}</b></td><td>${(d[k].accuracy*100).toFixed(1)}%</td><td>${(d[k].f1_macro*100).toFixed(1)}%</td><td>${(d[k].precision_macro*100).toFixed(1)}%</td><td>${(d[k].recall_macro*100).toFixed(1)}%</td></tr>`;
+ document.getElementById('cmp').innerHTML=h+'</table><p style="font-size:12px;color:#666;margin-top:6px">Best: <b>'+d.analysis.best_model+'</b> · '+d.analysis.note+'</p>';
+}catch(e){document.getElementById('cmp').textContent='Backend offline — start: uvicorn crop_backend:app --port 8000'}}
+async function loadHist(){try{const d=await (await fetch(API+'/api/predictions?limit=10')).json();
+ if(!d.total){document.getElementById('hist').textContent='No predictions yet — run your first analysis above.';return}
+ document.getElementById('hist').innerHTML='<table><tr><th>Time</th><th>Crop</th><th>Prediction</th><th>Conf</th><th>Risk</th></tr>'+
+ d.predictions.map(p=>`<tr><td>${p.timestamp.slice(0,19).replace('T',' ')}</td><td>${p.crop}</td><td>${p.prediction}</td><td>${(p.confidence*100).toFixed(1)}%</td><td>${p.risk_level}</td></tr>`).join('')+'</table>';
+}catch(e){}}
+loadCmp();loadHist();
+</script>
+</body>
+</html>

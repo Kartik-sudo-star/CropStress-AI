@@ -1,0 +1,40 @@
+{
+  "dataset": "ffpp_sample_hf",
+  "source_url": "https://huggingface.co/datasets/subhan1501/fake-face-detection-dataset",
+  "license": "MIT (per HuggingFace dataset card; underlying videos from FaceForensics++, YouTube-sourced)",
+  "manipulation_types": [
+    "Deepfakes",
+    "original"
+  ],
+  "labels": {
+    "real": 0,
+    "fake": 1
+  },
+  "videos": {
+    "total": 80,
+    "real": 40,
+    "fake": 40,
+    "exact_duplicate_files": 0
+  },
+  "frames": {
+    "total": 640,
+    "per_video": 8,
+    "exact_duplicate_frames": 0
+  },
+  "split": {
+    "strategy": "stratified, grouped by identity component (union-find over filename ids)",
+    "train_rows": 504,
+    "validation_rows": 108,
+    "test_rows": 108,
+    "identity_components": {
+      "train": 27,
+      "validation": 6,
+      "test": 6
+    },
+    "cross_split_identity_leaks": []
+  },
+  "notes": [
+    "Fake filenames 'AAA_BBB.mp4' involve two source identities; both are unioned into one split component to prevent identity leakage.",
+    "No audio tracks are used; audio detector training is out of scope for this sample (documented as future work)."
+  ]
+}

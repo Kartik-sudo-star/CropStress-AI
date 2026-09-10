@@ -1,0 +1,194 @@
+{
+  "image_only": {
+    "accuracy": 0.9,
+    "precision_macro": 0.9131944444444444,
+    "recall_macro": 0.90625,
+    "f1_macro": 0.8943910256410257,
+    "precision_weighted": 0.9189814814814814,
+    "recall_weighted": 0.9,
+    "f1_weighted": 0.8937393162393162,
+    "confusion_matrix": [
+      [
+        8,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        7,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        5,
+        2
+      ],
+      [
+        0,
+        0,
+        0,
+        7
+      ]
+    ],
+    "class_labels": [
+      "Healthy",
+      "Mild Stress",
+      "Moderate Stress",
+      "Severe Stress"
+    ],
+    "per_class": {
+      "Healthy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "Mild Stress": {
+        "precision": 0.875,
+        "recall": 1.0,
+        "f1": 0.9333333333333333
+      },
+      "Moderate Stress": {
+        "precision": 1.0,
+        "recall": 0.625,
+        "f1": 0.7692307692307693
+      },
+      "Severe Stress": {
+        "precision": 0.7777777777777778,
+        "recall": 1.0,
+        "f1": 0.875
+      }
+    },
+    "test_set_size": 30
+  },
+  "sensor_only": {
+    "accuracy": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "f1_macro": 1.0,
+    "precision_weighted": 1.0,
+    "recall_weighted": 1.0,
+    "f1_weighted": 1.0,
+    "confusion_matrix": [
+      [
+        8,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        7,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        8,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        7
+      ]
+    ],
+    "class_labels": [
+      "Healthy",
+      "Mild Stress",
+      "Moderate Stress",
+      "Severe Stress"
+    ],
+    "per_class": {
+      "Healthy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "Mild Stress": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "Moderate Stress": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "Severe Stress": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "test_set_size": 30
+  },
+  "multimodal": {
+    "accuracy": 1.0,
+    "precision_macro": 1.0,
+    "recall_macro": 1.0,
+    "f1_macro": 1.0,
+    "precision_weighted": 1.0,
+    "recall_weighted": 1.0,
+    "f1_weighted": 1.0,
+    "confusion_matrix": [
+      [
+        8,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        7,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        8,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        7
+      ]
+    ],
+    "class_labels": [
+      "Healthy",
+      "Mild Stress",
+      "Moderate Stress",
+      "Severe Stress"
+    ],
+    "per_class": {
+      "Healthy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "Mild Stress": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "Moderate Stress": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "Severe Stress": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "test_set_size": 30
+  }
+}

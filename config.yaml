@@ -1,0 +1,493 @@
+# AI-Driven Deepfake Detection & Cyber-Crime Mitigation Configuration
+# Project: "AI-Driven Detection and Mitigation of Deepfake-Driven Cyber Crimes on Social Media: A Study with Reference to India"
+
+# ============================================================
+# GENERAL SETTINGS
+# ============================================================
+general:
+  project_name: "DeepfakeCyberCrimeDetection"
+  version: "1.0.0"
+  random_seed: 42
+  device: "cpu"  # "cuda" if GPU available, else "cpu"
+  num_workers: 4
+  pin_memory: true
+
+# ============================================================
+# PATHS
+# ============================================================
+paths:
+  data_raw: "data/raw"
+  data_processed: "data/processed"
+  data_train: "data/train"
+  data_validation: "data/validation"
+  data_test: "data/test"
+  models_dir: "models"
+  logs_dir: "logs"
+  checkpoints_dir: "models/checkpoints"
+  reports_dir: "reports"
+  temp_dir: "temp"
+
+# ============================================================
+# DATASET CONFIGURATION
+# ============================================================
+dataset:
+  # Supported datasets (download separately - see docs/DATASET_GUIDE.md)
+  # FaceForensics++ (image/video), DFDC (video), ASVspoof (audio), DeepFakeDetection (image)
+  sources:
+    - name: "faceforensics++"
+      type: "image_video"
+      manipulation_types: ["Deepfakes", "Face2Face", "FaceSwap", "NeuralTextures"]
+      splits: ["train", "val", "test"]
+    - name: "dfdc"
+      type: "video"
+      splits: ["train", "val", "test"]
+    - name: "asvspoof2019"
+      type: "audio"
+      splits: ["train", "dev", "eval"]
+    - name: "deepfake_detection_challenge"
+      type: "video"
+      splits: ["train", "test"]
+
+  # Media type settings
+  image:
+    target_size: [224, 224]
+    supported_formats: [".jpg", ".jpeg", ".png", ".webp"]
+    max_file_size_mb: 10
+    normalization:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+    face_detection:
+      enabled: true
+      min_face_size: 64
+      confidence_threshold: 0.9
+
+  video:
+    supported_formats: [".mp4", ".mov", ".avi"]
+    max_file_size_mb: 100
+    max_duration_seconds: 60
+    frame_sampling:
+      method: "uniform"  # "uniform", "random", "keyframe"
+      num_frames: 16
+      min_frames: 8
+    face_detection:
+      enabled: true
+      min_face_size: 64
+      confidence_threshold: 0.9
+
+  audio:
+    supported_formats: [".wav", ".mp3", ".m4a"]
+    max_file_size_mb: 20
+    max_duration_seconds: 30
+    sample_rate: 16000
+    segment_length: 4  # seconds
+    spectrogram:
+      n_fft: 512
+      hop_length: 160
+      n_mels: 80
+      target_length: 400  # time frames
+
+  # Data splitting (critical: prevent leakage)
+  split:
+    train_ratio: 0.7
+    val_ratio: 0.15
+    test_ratio: 0.15
+    stratify: true
+    group_aware: true  # Split by source video/identity to prevent leakage
+    split_by: "source_video"  # "source_video", "identity", "session"
+
+  # Class balance
+  class_balance:
+    enabled: true
+    method: "weighted_sampler"  # "weighted_sampler", "oversample", "undersample", "class_weights"
+
+# ============================================================
+# IMAGE DETECTOR CONFIGURATION
+# ============================================================
+image_detector:
+  architecture: "efficientnet_b0"  # efficientnet_b0, resnet50, convnext_tiny, xception
+  pretrained: true
+  freeze_backbone_epochs: 5
+  num_classes: 2  # Real, Fake
+  dropout: 0.3
+  embedding_dim: 512
+
+  training:
+    batch_size: 16
+    epochs: 30
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    optimizer: "adamw"
+    scheduler: "cosine_annealing"
+    scheduler_params:
+      T_max: 30
+      eta_min: 0.000001
+    early_stopping:
+      patience: 8
+      min_delta: 0.0001
+      monitor: "val_auc"
+    mixed_precision: false
+    gradient_clip: 1.0
+    loss_function: "cross_entropy"  # cross_entropy, focal_loss, label_smoothing
+    loss_params:
+      label_smoothing: 0.1
+
+  augmentation:
+    train:
+      horizontal_flip: 0.5
+      rotation: 10
+      brightness: 0.15
+      contrast: 0.15
+      saturation: 0.15
+      hue: 0.05
+      gaussian_blur: 0.1
+      compression_simulation: 0.3  # JPEG compression artifact simulation
+      gaussian_noise: 0.1
+    val:
+      # No augmentation for validation
+      pass
+
+# ============================================================
+# VIDEO DETECTOR CONFIGURATION
+# ============================================================
+video_detector:
+  # Frame-level backbone
+  frame_backbone:
+    architecture: "efficientnet_b0"
+    pretrained: true
+    freeze_backbone_epochs: 5
+    embedding_dim: 512
+
+  # Temporal aggregation
+  temporal:
+    type: "lstm"  # "mean", "max", "lstm", "transformer", "attention"
+    hidden_dim: 256
+    num_layers: 2
+    dropout: 0.3
+    bidirectional: true
+
+  num_classes: 2  # Real, Fake
+  dropout: 0.4
+
+  training:
+    batch_size: 4  # Lower due to memory
+    epochs: 25
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    optimizer: "adamw"
+    scheduler: "cosine_annealing"
+    scheduler_params:
+      T_max: 25
+      eta_min: 0.000001
+    early_stopping:
+      patience: 8
+      min_delta: 0.0001
+      monitor: "val_auc"
+    mixed_precision: false
+    gradient_clip: 1.0
+    loss_function: "cross_entropy"
+    loss_params:
+      label_smoothing: 0.1
+
+# ============================================================
+# AUDIO DETECTOR CONFIGURATION
+# ============================================================
+audio_detector:
+  architecture: "rawnet2"  # "rawnet2", "wav2vec2", "conformer", "ast"
+  pretrained: false  # RawNet2 typically trained from scratch
+  num_classes: 2  # Bonafide, Spoof
+  embedding_dim: 256
+
+  # RawNet2 specific
+  rawnet2:
+    sinc_conv:
+      out_channels: 70
+      kernel_size: 1024
+      in_channels: 1
+    resblock:
+      channels: [70, 70, 140, 140, 280, 280]
+    gru:
+      hidden_dim: 1024
+      num_layers: 3
+    fc:
+      hidden_dim: 1024
+
+  training:
+    batch_size: 32
+    epochs: 50
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    optimizer: "adam"
+    scheduler: "reduce_on_plateau"
+    scheduler_params:
+      factor: 0.5
+      patience: 5
+      min_lr: 0.000001
+    early_stopping:
+      patience: 15
+      min_delta: 0.0001
+      monitor: "val_eer"  # Equal Error Rate
+    gradient_clip: 3.0
+    loss_function: "amsoftmax"  # amsoftmax, cross_entropy, aamsoftmax
+    loss_params:
+      margin: 0.2
+      scale: 30
+
+# ============================================================
+# MULTIMODAL FUSION CONFIGURATION
+# ============================================================
+multimodal_detector:
+  fusion_type: "concatenate"  # "concatenate", "attention", "bilinear", "gated"
+  
+  # Visual branch (video detector without temporal head)
+  visual_branch:
+    backbone: "efficientnet_b0"
+    pretrained: true
+    freeze_backbone: true
+    embedding_dim: 512
+
+  # Audio branch
+  audio_branch:
+    architecture: "rawnet2"
+    pretrained: false
+    embedding_dim: 256
+
+  # Fusion layers
+  fusion:
+    hidden_dims: [512, 256]
+    dropout: 0.4
+    activation: "relu"
+
+  # Final classifier
+  classifier:
+    num_classes: 2
+    dropout: 0.3
+
+  training:
+    batch_size: 4
+    epochs: 20
+    learning_rate: 0.0005
+    weight_decay: 0.0001
+    optimizer: "adamw"
+    scheduler: "cosine_annealing"
+    scheduler_params:
+      T_max: 20
+      eta_min: 0.000001
+    early_stopping:
+      patience: 10
+      min_delta: 0.0001
+      monitor: "val_auc"
+    gradient_clip: 1.0
+    loss_function: "cross_entropy"
+
+# ============================================================
+# EXPLAINABILITY CONFIGURATION
+# ============================================================
+explainability:
+  image:
+    method: "gradcam"  # gradcam, gradcam++, integrated_gradients, occlusion
+    target_layer: "features.7"  # EfficientNet-B0 final conv layer
+    alpha: 0.5
+    colormap: "jet"
+
+  video:
+    method: "gradcam_per_frame"  # gradcam_per_frame, temporal_attention
+    target_layer: "features.7"
+    alpha: 0.5
+    colormap: "jet"
+    max_frames_visualize: 8
+
+  audio:
+    method: "integrated_gradients"  # integrated_gradients, attention_weights
+    baseline: "zero"
+    steps: 50
+
+  metadata:
+    method: "feature_importance"
+    show_all: true
+
+# ============================================================
+# FORENSIC / METADATA ANALYSIS
+# ============================================================
+forensic:
+  image:
+    extract_exif: true
+    check_consistency: true
+    analyze_compression: true
+    detect_splicing: true  # ELA, noise analysis
+  
+  video:
+    extract_metadata: true
+    check_codec: true
+    analyze_frame_consistency: true
+    detect_frame_duplication: true
+    analyze_gop_structure: true
+
+  audio:
+    extract_metadata: true
+    analyze_spectral_consistency: true
+    detect_splicing: true
+    check_sample_rate_consistency: true
+
+# ============================================================
+# CYBER-CRIME RISK ASSESSMENT
+# ============================================================
+risk_assessment:
+  # Risk levels: LOW, MEDIUM, HIGH, CRITICAL
+  thresholds:
+    deepfake_probability:
+      low: 0.3
+      medium: 0.5
+      high: 0.7
+      critical: 0.9
+  
+  # Context signals that increase risk
+  context_signals:
+    impersonation_indicators:
+      weight: 0.3
+      keywords: ["official", "government", "police", "bank", "ceo", "director", "manager", "hr", "recruitment"]
+    fraud_indicators:
+      weight: 0.25
+      keywords: ["urgent", "immediate", "transfer", "payment", "account", "otp", "kyc", "verify", "click here", "link"]
+    harassment_indicators:
+      weight: 0.2
+      keywords: ["threat", "blackmail", "expose", "shame", "ruin", "destroy"]
+    misinformation_indicators:
+      weight: 0.15
+      keywords: ["breaking", "exclusive", "leaked", "secret", "hidden truth", "they don't want you to know"]
+    social_engineering_indicators:
+      weight: 0.1
+      keywords: ["trust", "confidential", "between us", "don't tell", "secret"]
+
+  # India-specific context
+  india_context:
+    enabled: true
+    official_channels:
+      - name: "National Cyber Crime Reporting Portal"
+        url: "https://cybercrime.gov.in"
+        description: "Official Government of India portal for reporting cyber crimes"
+      - name: "Indian Computer Emergency Response Team (CERT-In)"
+        url: "https://www.cert-in.org.in"
+        description: "National nodal agency for cyber security incident response"
+      - name: "State Cyber Crime Cells"
+        description: "Contact local police cyber crime cell"
+      - name: "Social Media Platform Reporting"
+        description: "Use platform's built-in reporting tools (Meta, X, YouTube, etc.)"
+    
+    legal_framework:
+      - act: "Information Technology Act, 2000"
+        sections: ["66C (Identity theft)", "66D (Cheating by personation)", "67 (Obscene content)", "67A (Sexually explicit content)"]
+      - act: "Indian Penal Code"
+        sections: ["419 (Cheating by personation)", "420 (Cheating)", "465 (Forgery)", "500 (Defamation)"]
+      - act: "Bharatiya Nyaya Sanhita (BNS), 2023"
+        note: "Replaced IPC - check current provisions"
+    
+    evidence_preservation:
+      - "Take screenshots with timestamp"
+      - "Save original media file (do not compress/re-encode)"
+      - "Record URL, profile details, timestamp"
+      - "Note platform, account handle, post ID"
+      - "Calculate SHA-256 hash of original file"
+      - "Store in write-once media if possible"
+
+# ============================================================
+# EVALUATION CONFIGURATION
+# ============================================================
+evaluation:
+  metrics:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1"
+    - "roc_auc"
+    - "pr_auc"
+    - "eer"  # Equal Error Rate for audio
+    - "confusion_matrix"
+    - "per_class_metrics"
+  
+  robustness_testing:
+    enabled: true
+    transformations:
+      - name: "jpeg_compression"
+        params: [75, 50, 30, 10]
+      - name: "resize"
+        params: [0.5, 0.25]
+      - name: "gaussian_noise"
+        params: [0.01, 0.05]
+      - name: "blur"
+        params: [1.0, 2.0]
+      - name: "frame_drop"
+        params: [0.1, 0.3]
+      - name: "audio_compression"
+        params: ["mp3_128k", "mp3_64k"]
+  
+  threshold_analysis:
+    enabled: true
+    num_thresholds: 100
+    plot_roc: true
+    plot_pr: true
+    plot_det: true  # Detection Error Tradeoff
+
+# ============================================================
+# BACKEND API CONFIGURATION
+# ============================================================
+backend:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  reload: false
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://127.0.0.1:3000"
+    - "http://localhost:5173"
+    - "http://127.0.0.1:5173"
+
+  # Model serving paths (populated after training)
+  model:
+    image_detector_path: "models/image_detector/best_model.pth"
+    video_detector_path: "models/video_detector/best_model.pth"
+    audio_detector_path: "models/audio_detector/best_model.pth"
+    multimodal_detector_path: "models/multimodal_detector/best_model.pth"
+    image_preprocessor_path: "models/image_detector/preprocessor.pkl"
+    video_preprocessor_path: "models/video_detector/preprocessor.pkl"
+    audio_preprocessor_path: "models/audio_detector/preprocessor.pkl"
+
+  # Database
+  database:
+    url: "sqlite:///./deepfake_analysis.db"
+    echo: false
+
+  # File upload limits
+  upload:
+    max_image_size_mb: 10
+    max_video_size_mb: 100
+    max_audio_size_mb: 20
+    allowed_image_types: ["image/jpeg", "image/png", "image/webp"]
+    allowed_video_types: ["video/mp4", "video/quicktime", "video/x-msvideo"]
+    allowed_audio_types: ["audio/wav", "audio/mpeg", "audio/mp4", "audio/x-m4a"]
+
+  # Prediction settings
+  prediction:
+    confidence_threshold: 0.5
+    return_all_probabilities: true
+    enable_explainability: true
+    enable_forensic: true
+    enable_risk_assessment: true
+
+# ============================================================
+# FRONTEND CONFIGURATION
+# ============================================================
+frontend:
+  port: 5173
+  api_base_url: "http://localhost:8000"
+  build_output: "frontend/build"
+
+# ============================================================
+# LOGGING CONFIGURATION
+# ============================================================
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/deepfake_detection.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+  console: true

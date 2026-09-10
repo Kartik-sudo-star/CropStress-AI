@@ -1,0 +1,104 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Model checkpoints & weights
+models/checkpoints/
+models/*/best_model.pth
+models/*/best_model.pkl
+models/*/preprocessor.pkl
+models/*/metadata.json
+
+# Data (large files)
+data/raw/
+data/processed/
+data/train/
+data/validation/
+data/test/
+*.csv
+*.parquet
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Frontend build
+frontend/build/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Testing
+.pytest_cache/
+.tox/
+
+# Type checking
+.mypy_cache/
+.pyre/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Temporary
+tmp/
+temp/
+*.tmp
+*.bak
+
+# OS specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Local configuration / secrets
+config.local.yaml
+
+# Local database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+
+# Temporary files
+temp/

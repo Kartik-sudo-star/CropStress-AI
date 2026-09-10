@@ -1,0 +1,168 @@
+{
+  "messages": [],
+  "views": 18,
+  "projects": [
+    {
+      "id": 1,
+      "title": "Neon Dashboard",
+      "desc": "Real-time analytics with WebSocket, D3.js charts and cyberpunk theme",
+      "icon": "\ud83d\ude80",
+      "likes": 125,
+      "tech": [
+        "React",
+        "D3",
+        "WebSocket"
+      ],
+      "color": "#00d4ff"
+    },
+    {
+      "id": 2,
+      "title": "AI Chat Interface",
+      "desc": "Conversational AI with streaming, markdown & voice input",
+      "icon": "\ud83e\udd16",
+      "likes": 90,
+      "tech": [
+        "Next.js",
+        "OpenAI",
+        "Tailwind"
+      ],
+      "color": "#7b2ff7"
+    },
+    {
+      "id": 3,
+      "title": "3D Portfolio Engine",
+      "desc": "Three.js + WebGL interactive 3D scenes with particles",
+      "icon": "\ud83c\udfae",
+      "likes": 210,
+      "tech": [
+        "Three.js",
+        "GSAP",
+        "WebGL"
+      ],
+      "color": "#ff2d55"
+    },
+    {
+      "id": 4,
+      "title": "Fitness Tracker PWA",
+      "desc": "Offline PWA with push notifications & workout analytics",
+      "icon": "\ud83d\udcf1",
+      "likes": 67,
+      "tech": [
+        "PWA",
+        "IndexedDB",
+        "Charts"
+      ],
+      "color": "#00d4ff"
+    },
+    {
+      "id": 5,
+      "title": "Crypto Tracker",
+      "desc": "Live crypto prices with charts & portfolio manager",
+      "icon": "\ud83d\udcb9",
+      "likes": 156,
+      "tech": [
+        "Vue",
+        "CoinGecko",
+        "Chart.js"
+      ],
+      "color": "#7b2ff7"
+    },
+    {
+      "id": 6,
+      "title": "E-Commerce Neo",
+      "desc": "Next-gen shopping with AR try-on & AI recommendations",
+      "icon": "\ud83d\uded2",
+      "likes": 98,
+      "tech": [
+        "MERN",
+        "AR.js",
+        "Stripe"
+      ],
+      "color": "#ff2d55"
+    }
+  ],
+  "skills": [
+    {
+      "name": "HTML5",
+      "level": 95,
+      "icon": "\ud83c\udf10",
+      "cat": "Frontend"
+    },
+    {
+      "name": "CSS3",
+      "level": 85,
+      "icon": "\ud83c\udfa8",
+      "cat": "Frontend"
+    },
+    {
+      "name": "JavaScript",
+      "level": 85,
+      "icon": "\u26a1",
+      "cat": "Frontend"
+    },
+    {
+      "name": "React",
+      "level": 80,
+      "icon": "\u269b\ufe0f",
+      "cat": "Frontend"
+    },
+    {
+      "name": "Python",
+      "level": 88,
+      "icon": "\ud83d\udc0d",
+      "cat": "Backend"
+    },
+    {
+      "name": "Node.js",
+      "level": 75,
+      "icon": "\ud83d\uddc4\ufe0f",
+      "cat": "Backend"
+    },
+    {
+      "name": "Flask",
+      "level": 82,
+      "icon": "\ud83d\udd25",
+      "cat": "Backend"
+    },
+    {
+      "name": "MongoDB",
+      "level": 70,
+      "icon": "\ud83c\udf43",
+      "cat": "DB"
+    }
+  ],
+  "stats": {
+    "projects": 50,
+    "clients": 30,
+    "experience": 5,
+    "satisfaction": 99
+  },
+  "timeline": [
+    {
+      "time": "2024 \u2014 Present",
+      "title": "Senior Frontend Developer",
+      "desc": "Leading UI architecture for enterprise SaaS platforms, mentoring team of 8",
+      "id": 1
+    },
+    {
+      "time": "2022 \u2014 2024",
+      "title": "Frontend Developer",
+      "desc": "Built 20+ responsive web apps, design systems & component libraries",
+      "id": 2
+    },
+    {
+      "time": "2020 \u2014 2022",
+      "title": "Junior Developer",
+      "desc": "Started journey with HTML/CSS/JS, first freelance projects & hackathons",
+      "id": 3
+    }
+  ],
+  "hero": {
+    "typed": [
+      "clean & performant web applications",
+      "futuristic UI/UX experiences",
+      "pixel-perfect responsive designs",
+      "interactive animations & 3D scenes"
+    ]
+  }
+}
