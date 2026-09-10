@@ -51,7 +51,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;borde
 <div class="card"><h2>4️⃣ Prediction history</h2><div id="hist">loading…</div></div>
 </main>
 <script>
-const API='s';
+const API='https://cropstress-ai.onrender.com';
 document.getElementById('img').onchange=e=>{const f=e.target.files[0];if(f){const r=new FileReader();r.onload=x=>{const p=document.getElementById('preview');p.src=x.target.result;p.style.display='block'};r.readAsDataURL(f)}};
 async function analyze(){
  const f=document.getElementById('img').files[0];
